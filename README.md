@@ -11,7 +11,9 @@ Impress your music league friends by generating some tables and charts
 
 * Checkout the repo
 
-`git clone ...`
+`git clone https://github.com/jenkoian/brian-wilson-invitational.git`
+
+`cd brian-wilson-invitational`
 
 * Install dependencies
 
