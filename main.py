@@ -20,6 +20,7 @@ GROUP BY Name
 order by points desc;
 """
 df = con.execute(query).df()
+df.index += 1
 st.table(df)
 
 st.subheader("Song popularity (top 50)")
@@ -35,6 +36,23 @@ LIMIT 50;
 """
 
 df = con.execute(query).df()
+df.index += 1
+st.table(df)
+
+st.subheader("Song unpopularity (bottom 50)")
+
+query = """
+select CONCAT(s."Artist(s)", ' - ', s.Title) as song, SUM(v."Points Assigned")::INTEGER as points
+from competitors c
+join submissions s on c.ID = s."Submitter ID"
+join votes v on s."Spotify URI" = v."Spotify URI"
+GROUP BY song
+order by points asc
+LIMIT 50;
+"""
+
+df = con.execute(query).df()
+df.index += 1
 st.table(df)
 
 st.subheader("Artist popularity (top 50)")
@@ -49,6 +67,22 @@ LIMIT 50;
 """
 
 df = con.execute(query).df()
+df.index += 1
+st.table(df)
+
+st.subheader("Artist unpopularity (bottom 50)")
+
+query = """
+select s."Artist(s)" as artist, COUNT(s."Artist(s)")::INTEGER as picked
+from competitors c
+join submissions s on c.ID = s."Submitter ID"
+GROUP BY artist
+order by picked asc
+LIMIT 50;
+"""
+
+df = con.execute(query).df()
+df.index += 1
 st.table(df)
 
 # st.subheader("Vote breakdown by point")
