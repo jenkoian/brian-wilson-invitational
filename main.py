@@ -26,7 +26,7 @@ st.table(df)
 st.subheader("Song popularity (top 50)")
 
 query = """
-select CONCAT(s."Artist(s)", ' - ', s.Title) as song, SUM(v."Points Assigned")::INTEGER as points
+select CONCAT(s."Artist(s)", ' - ', s.Title) as song, LISTAGG(DISTINCT c.Name, ', ') as name, SUM(v."Points Assigned")::INTEGER as points
 from competitors c
 join submissions s on c.ID = s."Submitter ID"
 join votes v on s."Spotify URI" = v."Spotify URI"
@@ -42,12 +42,28 @@ st.table(df)
 st.subheader("Song unpopularity (bottom 50)")
 
 query = """
-select CONCAT(s."Artist(s)", ' - ', s.Title) as song, SUM(v."Points Assigned")::INTEGER as points
+select CONCAT(s."Artist(s)", ' - ', s.Title) as song, LISTAGG(DISTINCT c.Name, ', ') as name, SUM(v."Points Assigned")::INTEGER as points
 from competitors c
 join submissions s on c.ID = s."Submitter ID"
 join votes v on s."Spotify URI" = v."Spotify URI"
-GROUP BY song
+GROUP BY song, name
 order by points asc
+LIMIT 50;
+"""
+
+df = con.execute(query).df()
+df.index += 1
+st.table(df)
+
+st.subheader("Songs evoking 0 votes either way")
+
+query = """
+select CONCAT(s."Artist(s)", ' - ', s.Title) as song, C.Name as name, r.Name as round
+from competitors c
+join submissions s on c.ID = s."Submitter ID"
+join rounds r on s."Round ID" = r.ID
+left join votes v on s."Spotify URI" = v."Spotify URI"
+where v."Points Assigned" is null
 LIMIT 50;
 """
 
@@ -106,7 +122,7 @@ st.table(df)
 # df = con.execute(query).df()
 # st.table(df)
 
-st.subheader("Season 3 point breakdown heatmap")
+st.subheader("Point breakdown heatmap")
 
 query = """
 with unique_points as (
@@ -132,23 +148,24 @@ points_matrix = df.pivot_table(index='name', columns='points', values='cnt', agg
 normalized_matrix = points_matrix.apply(lambda x: (x - x.min()) / (x.max() - x.min()) if x.max() > x.min() else x, axis=0)
 
 plt.figure(figsize=(20, 12))
-sns.heatmap(normalized_matrix, annot=points_matrix.values, fmt='g', cmap="crest")
-plt.title('Season 3 points distribution')
+sns.heatmap(normalized_matrix, annot=points_matrix.values, fmt='g', cmap='viridis')
+plt.title('Points distribution')
 plt.xlabel('Points')
 plt.ylabel('Name')
 
 st.pyplot(plt)
 
-st.subheader("Season 3 vote breakdown heatmap")
+st.subheader("Vote breakdown heatmap")
 
 query = """
-SELECT cv.Name as voter, cs.Name as submitter, v."Points Assigned"::INTEGER as points
-FROM rounds r
-JOIN submissions s on r.ID = s."Round ID"
-JOIN competitors cs ON s."Submitter ID" = cs.ID
-JOIN votes v ON v."Spotify URI" = s."Spotify URI" AND v."Round ID" = s."Round ID"
-JOIN competitors cv ON v."Voter ID" = cv.ID
-GROUP BY voter, submitter, r.ID, points
+select c.Name as voter, cs.Name as submitter,
+SUM(v."Points Assigned"::INTEGER) as points
+from competitors c
+join votes v on c.ID = v."Voter ID"
+join submissions s on s."Spotify URI" = v."Spotify URI"  
+join rounds r on s."Round ID" = r.ID
+join competitors cs on cs.ID = s."Submitter ID"
+GROUP BY voter, submitter, r.id
 """
 
 df = con.execute(query).df()
@@ -158,14 +175,14 @@ points_matrix = df.pivot_table(index='voter', columns='submitter', values='point
 #st.table(points_matrix)
 
 plt.figure(figsize=(20, 12))
-sns.heatmap(points_matrix, annot=True, cmap='coolwarm', fmt='g')
-plt.title('Season 3 points Assigned by Competitors')
+sns.heatmap(points_matrix, annot=True, cmap='viridis', fmt='g')
+plt.title('Points Assigned by Competitors')
 plt.xlabel('Submitter Name')
 plt.ylabel('Voter Name')
 
 st.pyplot(plt)
 
-st.subheader("Season 3 vote comments wordcloud")
+st.subheader("Vote comments wordcloud")
 
 query = """
 WITH words AS (
@@ -190,7 +207,7 @@ plt.axis("off")
 plt.tight_layout(pad=0)
 st.pyplot(fig)
 
-st.subheader("Season 3 submission comments wordcloud")
+st.subheader("Submission comments wordcloud")
 
 query = """
 WITH words AS (
@@ -215,7 +232,7 @@ plt.axis("off")
 plt.tight_layout(pad=0)
 st.pyplot(fig)
 
-st.subheader("Season 3 voting by playlist position")
+st.subheader("Voting by playlist position")
 
 query = """
 with song_positions as (
