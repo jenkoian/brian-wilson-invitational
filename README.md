@@ -25,12 +25,12 @@ Impress your music league friends by generating some tables and charts
 
 * Build the database
 
-`uv run builddb.py`
+`./builddb.sh`
 
 ## Run
 
-`uv run streamlit run main.py`
+`./streamlit.sh`
 
 ## UI for testing queries
 
-`uv run duckdb -cmd "ATTACH IF NOT EXISTS 'bwi.duckdb' AS bwi (READ_ONLY); CALL start_ui();"`
+`./db_ui.sh`

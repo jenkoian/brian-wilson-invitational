@@ -13,3 +13,11 @@ con = duckdb.connect(database='bwi.duckdb')
 for file in ['competitors.csv', 'rounds.csv', 'submissions.csv', 'votes.csv']:
     query = f"CREATE OR REPLACE TABLE {file.replace('.csv', '')} AS SELECT * FROM read_csv('data/{file}')"
     con.execute(query)
+
+
+print('Building UI database...')
+con = duckdb.connect(database='bwi_ui.duckdb')
+
+for file in ['competitors.csv', 'rounds.csv', 'submissions.csv', 'votes.csv']:
+    query = f"CREATE OR REPLACE TABLE {file.replace('.csv', '')} AS SELECT * FROM read_csv('data/{file}')"
+    con.execute(query)
