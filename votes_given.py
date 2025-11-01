@@ -30,4 +30,5 @@ AND submitter = ?
 """
 
 df = con.execute(query, (voter, submitter)).df()
+df.index += 1
 st.table(df)
