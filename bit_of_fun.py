@@ -40,12 +40,12 @@ and c."name" = ?;
 
 df = con.execute(query, [competitor]).df()
 
-st.metric("How often you (up)voted for the best song", df['times'])
+st.metric("How often you (up)voted the winning song", df['times'])
 
 if int(df['times'][0]) > 0:
   votes = int(df['votes'][0])
   votes_str = 'votes' if votes != 1 else 'vote'
-  st.caption(f"You dished out {votes} {votes_str} to the best songs in total")
+  st.caption(f"You dished out {votes} {votes_str} to the winning songs in total")
 
 query = """
 with round_songs as (
@@ -72,12 +72,12 @@ and c."name" = ?;
 
 df = con.execute(query, [competitor]).df()
 
-st.metric("How often you (down)voted for the best song", df['times'])
+st.metric("How often you (down)voted the winning song", df['times'])
 
 if int(df['times'][0]) > 0:
   votes = int(df['votes'][0])
   votes_str = 'votes' if votes != 1 else 'vote'
-  st.caption(f"You dished out {votes} {votes_str} to the best songs in total")
+  st.caption(f"You dished out {votes} {votes_str} to the winning songs in total")
 
 query = """
 with round_songs as (
@@ -104,12 +104,12 @@ and c."name" = ?;
 
 df = con.execute(query, [competitor]).df()
 
-st.metric("How often you (up)voted for the worst song", df['times'])
+st.metric("How often you (up)voted the losing song", df['times'])
 
 if int(df['times'][0]) > 0:
   votes = int(df['votes'][0])
   votes_str = 'votes' if votes != 1 else 'vote'
-  st.caption(f"You dished out {votes} {votes_str} to the worst songs in total")
+  st.caption(f"You dished out {votes} {votes_str} to the losing songs in total")
 
 query = """
 WITH comments_no_points as (
