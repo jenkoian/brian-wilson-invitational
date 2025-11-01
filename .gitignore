@@ -1,5 +1,5 @@
 .venv
 data/*
 !data/.gitkeep
-bwi.duckdb
+bwi_ui.duckdb
 export.zip
