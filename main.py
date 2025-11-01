@@ -14,6 +14,7 @@ pg = st.navigation(
         "vote_breakdown_heatmap.py",
         "voting_by_playlist_position.py",
         "votes_given.py",
+        "bit_of_fun.py",
     ]
 )
 pg.run()

@@ -19,7 +19,8 @@ with st.container(border=True):
 query = """
 SELECT cv.Name as Voter, cs.Name as Submitter, r."name" as Round, 
 CONCAT(s."Artist(s)", ' - ', s.title) as Song,
-v."Points Assigned"::INTEGER as "Points Awarded"
+v."Points Assigned"::INTEGER as "Points Awarded",
+v."Comment" as Comment
 FROM rounds r
 JOIN submissions s on r.ID = s."Round ID"
 JOIN competitors cs ON s."Submitter ID" = cs.ID
