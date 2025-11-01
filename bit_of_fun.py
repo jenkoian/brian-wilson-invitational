@@ -116,7 +116,8 @@ WITH comments_no_points as (
   SELECT cv.Name as voter, cs.Name as submitter, r."name" as round, 
   CONCAT(s."Artist(s)", ' - ', s.title) as song,
   v."Points Assigned"::INTEGER as points,
-  v."Comment" as comment
+  v."Comment" as comment,
+  LENGTH(v."Comment") as comment_length
   FROM rounds r
   JOIN submissions s on r.ID = s."Round ID"
   JOIN competitors cs ON s."Submitter ID" = cs.ID
@@ -125,7 +126,7 @@ WITH comments_no_points as (
   WHERE v."Comment" is not null
   AND points = 0
 )
-SELECT COUNT(1) as times, MAX(comment) as longest_comment
+SELECT COUNT(1) as times, MAX_BY(comment, comment_length) as longest_comment
 FROM comments_no_points
 WHERE voter = ?;
 """
