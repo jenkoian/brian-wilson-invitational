@@ -13,7 +13,7 @@ SUM(v."Points Assigned"::INTEGER) as points
 from competitors c
 join votes v on c.ID = v."Voter ID"
 join submissions s on s."Spotify URI" = v."Spotify URI"  
-join rounds r on s."Round ID" = r.ID
+join rounds r on s."Round ID" = r.ID and v."Round ID" = r.ID
 join competitors cs on cs.ID = s."Submitter ID"
 GROUP BY voter, submitter, r.id
 """
