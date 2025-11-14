@@ -16,6 +16,33 @@ with st.container(border=True):
     competitor = st.selectbox("Competitor", competitors['Name'], index=None, placeholder="Select competitor...")
 
 query = """
+WITH CombinedGenres AS (
+    -- Step 1: Aggregate and combine all unique genres per submitter
+    SELECT
+        c.Name AS submitter,
+        list_distinct(flatten(LIST(s.genres))) AS all_unique_genres
+    FROM
+        submissions s
+    JOIN
+        competitors c ON s."Submitter ID" = c.ID
+    GROUP BY
+        c.Name
+)
+-- Step 2: UNNEST the single list into multiple rows
+SELECT
+    UNNEST(cg.all_unique_genres) AS genre_name
+FROM
+    CombinedGenres cg
+WHERE cg.submitter = ?;
+"""
+
+df = con.execute(query, [competitor]).df()
+
+st.subheader("Your submitted genres")
+df.index += 1
+st.table(df)
+
+query = """
 with round_songs as (
   SELECT r.Name as round, CONCAT(s."Artist(s)", ' - ', s.title) as song, 
   s."Spotify URI" as spotify_uri,
