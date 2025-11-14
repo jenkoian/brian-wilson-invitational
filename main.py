@@ -15,6 +15,7 @@ pg = st.navigation(
         "voting_by_playlist_position.py",
         "votes_given.py",
         "wordclouds.py",
+        "genres.py",
         "bit_of_fun.py",
     ]
 )

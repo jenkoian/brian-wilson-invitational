@@ -3,3 +3,5 @@ data/*
 !data/.gitkeep
 bwi_ui.duckdb
 export.zip
+.env
+.cache
