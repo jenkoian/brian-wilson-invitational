@@ -13,10 +13,10 @@ with genres as (
   join submissions s on c.ID = s."Submitter ID"
   join votes v on s."Spotify URI" = v."Spotify URI"
 )
-select genre, count(*) as cnt
+select genre, count(*) as picked
 from genres
 group by genre
-order by cnt desc
+order by picked desc
 limit 50;
 """
 
@@ -34,10 +34,10 @@ with genres as (
   join submissions s on c.ID = s."Submitter ID"
   join votes v on s."Spotify URI" = v."Spotify URI"
 )
-select genre, count(*) as cnt
+select genre, count(*) as picked
 from genres
 group by genre
-order by cnt asc
+order by picked asc
 limit 50;
 """
 
