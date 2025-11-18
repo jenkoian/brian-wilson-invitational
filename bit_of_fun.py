@@ -16,11 +16,10 @@ with st.container(border=True):
     competitor = st.selectbox("Competitor", competitors['Name'], index=None, placeholder="Select competitor...")
 
 query = """
-WITH CombinedGenres AS (
-    -- Step 1: Aggregate and combine all unique genres per submitter
+WITH combined_genres AS (
     SELECT
         c.Name AS submitter,
-        list_distinct(flatten(LIST(s.genres))) AS all_unique_genres
+        list_distinct(flatten(LIST(s.spotify_genres || s.lastfm_genres))) AS all_unique_genres
     FROM
         submissions s
     JOIN
@@ -28,11 +27,10 @@ WITH CombinedGenres AS (
     GROUP BY
         c.Name
 )
--- Step 2: UNNEST the single list into multiple rows
 SELECT
     UNNEST(cg.all_unique_genres) AS genre_name
 FROM
-    CombinedGenres cg
+    combined_genres cg
 WHERE cg.submitter = ?;
 """
 

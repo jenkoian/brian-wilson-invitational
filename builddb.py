@@ -1,13 +1,16 @@
 import zipfile
 import duckdb
 import os
+import shutil
 from dotenv import load_dotenv
 
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
+import pylast
 
-def add_genre(table_name: str):
+
+def add_genre_spotify(table_name: str):
     query = f"""
     select "Spotify URI",
     from {table_name}
@@ -26,7 +29,34 @@ def add_genre(table_name: str):
         genres = [artist['genres'] for artist in artists['artists']]
 
         genre = genres[0]
-        query = f"UPDATE {table_name} SET genres = {genre} WHERE \"Spotify URI\" = '{uri[0]}'"
+        query = f"UPDATE {table_name} SET spotify_genres = {genre} WHERE \"Spotify URI\" = '{uri[0]}'"
+        con.execute(query)
+
+
+def add_genre_lastfm(table_name: str):
+    if table_name == 'submissions':
+        query = f"""
+        select "Artist(s)", "Title", "Spotify URI"
+        from {table_name}
+        """
+    else:
+        query = f"""
+        select s."Artist(s)", s."Title", s."Spotify URI"
+        from submissions s
+        join {table_name} t on s."Spotify URI" = t."Spotify URI"
+        """
+
+    songs = con.execute(query).fetchall()
+
+    for song in songs:
+        track = lf.get_track(song[0], song[1])
+        tags = track.get_top_tags()
+
+        print(f"Getting genre for {track}")
+
+        genres = [tag.item.get_name().lower() for tag in tags[:2]]
+
+        query = f"UPDATE {table_name} SET lastfm_genres = {genres} WHERE \"Spotify URI\" = '{song[2]}'"
         con.execute(query)
 
 
@@ -52,21 +82,21 @@ sp = spotipy.Spotify(
         )
 )
 
+lf = pylast.LastFMNetwork(
+    api_key=os.getenv('LAST_FM_API_KEY'),
+    api_secret=os.getenv('LAST_FM_API_SECRET'),
+)
+
 # Let's add genre information for all submissions and votes
 print('Adding genre information...')
 
-con.execute("ALTER TABLE submissions ADD COLUMN genres VARCHAR[]")
+con.execute("ALTER TABLE submissions ADD COLUMN spotify_genres VARCHAR[]")
+con.execute("ALTER TABLE submissions ADD COLUMN lastfm_genres VARCHAR[]")
 
-add_genre('submissions')
+add_genre_spotify('submissions')
+add_genre_lastfm('submissions')
 # When there are lots of votes, this takes a long time and will likely hit rate limits
 #add_genre('votes')
 
 print('Building UI database...')
-con = duckdb.connect(database='bwi_ui.duckdb')
-
-for file in ['competitors.csv', 'rounds.csv', 'submissions.csv', 'votes.csv']:
-    query = f"CREATE OR REPLACE TABLE {file.replace('.csv', '')} AS SELECT * FROM read_csv('data/{file}')"
-    con.execute(query)
-
-
-add_genre('submissions')
+shutil.copyfile('bwi.duckdb', 'bwi_ui.duckdb')

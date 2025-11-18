@@ -3,12 +3,54 @@ import duckdb
 
 con = duckdb.connect(database='bwi.duckdb')
 
+st.subheader("Genre popularity (top 50)")
+
+query = """
+-- Most popular genre
+with genres as (
+  select unnest(flatten(LIST(s.spotify_genres || s.lastfm_genres))) as genre
+  from competitors c
+  join submissions s on c.ID = s."Submitter ID"
+  join votes v on s."Spotify URI" = v."Spotify URI"
+)
+select genre, count(*) as cnt
+from genres
+group by genre
+order by cnt desc
+limit 50;
+"""
+
+df = con.execute(query).df()
+df.index += 1
+st.table(df)
+
+st.subheader("Genre unpopularity (bottom 50)")
+
+query = """
+-- Most popular genre
+with genres as (
+  select unnest(flatten(LIST(s.spotify_genres || s.lastfm_genres))) as genre
+  from competitors c
+  join submissions s on c.ID = s."Submitter ID"
+  join votes v on s."Spotify URI" = v."Spotify URI"
+)
+select genre, count(*) as cnt
+from genres
+group by genre
+order by cnt asc
+limit 50;
+"""
+
+df = con.execute(query).df()
+df.index += 1
+st.table(df)
+
 st.subheader("Submitter genres")
 
 query = """
 SELECT
     c.Name AS submitter,
-    list_distinct(flatten(LIST(s.genres))) AS all_unique_genres
+    list_distinct(flatten(LIST(s.spotify_genres || s.lastfm_genres))) AS all_unique_genres
 FROM
     submissions s
 JOIN
