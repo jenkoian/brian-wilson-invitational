@@ -8,12 +8,13 @@ st.subheader("Genre popularity (top 50)")
 query = """
 -- Most popular genre
 with genres as (
-  select unnest(flatten(LIST(s.spotify_genres || s.lastfm_genres))) as genre
+  select unnest(flatten(LIST(s.spotify_genres || s.lastfm_genres))) as genre, CONCAT(s."Artist(s)", ' - ', s.Title) as song
   from competitors c
   join submissions s on c.ID = s."Submitter ID"
   join votes v on s."Spotify URI" = v."Spotify URI"
+  group by CONCAT(s."Artist(s)", ' - ', s.Title)
 )
-select genre, count(*) as picked
+select genre, first(song) as example_song, count(*) as picked
 from genres
 group by genre
 order by picked desc
@@ -29,12 +30,13 @@ st.subheader("Genre unpopularity (bottom 50)")
 query = """
 -- Most popular genre
 with genres as (
-  select unnest(flatten(LIST(s.spotify_genres || s.lastfm_genres))) as genre
+  select unnest(flatten(LIST(s.spotify_genres || s.lastfm_genres))) as genre, CONCAT(s."Artist(s)", ' - ', s.Title) as song
   from competitors c
   join submissions s on c.ID = s."Submitter ID"
   join votes v on s."Spotify URI" = v."Spotify URI"
+  group by CONCAT(s."Artist(s)", ' - ', s.Title)
 )
-select genre, count(*) as picked
+select genre, first(song) as example_song, count(*) as picked
 from genres
 group by genre
 order by picked asc
