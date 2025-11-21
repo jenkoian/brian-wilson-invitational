@@ -62,7 +62,7 @@ min_count_filter = st.slider(
     "**Minimum Submissions Per Genre (Filter Out Low Counts):**",
     min_value=1,
     max_value=5,
-    value=2, # Defaulting to 2 to filter out single submissions
+    value=1,
     step=1
 )
 
