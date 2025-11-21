@@ -4,6 +4,16 @@ import duckdb
 con = duckdb.connect(database='bwi.duckdb')
 
 query = """
+select Name
+from competitors
+order by Name asc
+"""
+competitors = con.execute(query).df()
+
+with st.container(border=True):
+    competitor = st.selectbox("Competitor", competitors['Name'], index=None, placeholder="Select competitor...")
+
+query = """
 with round_songs as (
   SELECT r.Name as round, CONCAT(s."Artist(s)", ' - ', s.title) as song, 
   s."Spotify URI" as spotify_uri,
