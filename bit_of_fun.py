@@ -119,15 +119,6 @@ else:
     radar_fig = create_radar_chart(df_genre_counts, 'voter')
     st.plotly_chart(radar_fig, use_container_width=True)
 
-# st.subheader("Your voted genres")
-# df_vertical_table = df_counts.T
-# df_vertical_table.reset_index(inplace=True)
-# df_vertical_table.columns = ['genre_name', 'Count']
-# df_vertical_table.rename(columns={'genre_name': 'Genre'}, inplace=True)
-# df_vertical_table.sort_values(by='Count', ascending=False, inplace=True)
-#
-# st.dataframe(df_vertical_table, hide_index=True)
-
 # Other stuff
 
 query = """
