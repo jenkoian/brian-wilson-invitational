@@ -1,7 +1,28 @@
 import streamlit as st
 import duckdb
+import pandas as pd
+import plotly.express as px
 
 con = duckdb.connect(database='bwi.duckdb')
+
+def create_radar_chart(df_long: pd.DataFrame, id_var: str = 'submitter'):
+    max_count = df_long['Count'].max()
+
+    # Create the Plotly Radar Chart
+    fig = px.line_polar(
+        df_long,
+        r='Count',
+        theta='genre_name',
+        line_close=True,
+        range_r=[0, max_count * 1.1],
+        title=f"Submitted genres for {competitor}" if id_var == 'submitter' else f"Voted genres for {competitor}",
+        template='plotly_white'
+    )
+
+    # Customize the layout
+    fig.update_traces(fill='toself') # Fills the area inside the line
+
+    return fig
 
 st.subheader("Bit of fun")
 
@@ -19,7 +40,7 @@ query = """
 WITH combined_genres AS (
     SELECT
         c.Name AS submitter,
-        list_distinct(flatten(LIST(s.spotify_genres || s.lastfm_genres))) AS all_unique_genres
+        flatten(LIST(s.spotify_genres || s.lastfm_genres)) AS all_unique_genres
     FROM
         submissions s
     JOIN
@@ -28,6 +49,7 @@ WITH combined_genres AS (
         c.Name
 )
 SELECT
+    submitter,
     UNNEST(cg.all_unique_genres) AS genre_name
 FROM
     combined_genres cg
@@ -36,9 +58,77 @@ WHERE cg.submitter = ?;
 
 df = con.execute(query, [competitor]).df()
 
-st.subheader("Your submitted genres")
-df.index += 1
-st.table(df)
+min_count_filter = st.slider(
+    "**Minimum Submissions Per Genre (Filter Out Low Counts):**",
+    min_value=1,
+    max_value=5,
+    value=2, # Defaulting to 2 to filter out single submissions
+    step=1
+)
+
+df_genre_counts = df.groupby('genre_name').size().reset_index(name='Count')
+
+df_genre_counts = df_genre_counts[df_genre_counts['Count'] >= min_count_filter].copy()
+
+if df_genre_counts.empty:
+    st.warning(f"⚠️ **{competitor}** has no genres with a submission count of {min_count_filter} or more.")
+else:
+    radar_fig = create_radar_chart(df_genre_counts, 'submitter')
+    st.plotly_chart(radar_fig, use_container_width=True)
+
+# Voted genres
+query = """
+WITH combined_genres AS (
+    SELECT
+        c.Name AS voter,
+        flatten(LIST(s.spotify_genres || s.lastfm_genres)) AS all_unique_genres
+    FROM
+        votes v
+    JOIN
+        competitors c ON v."Voter ID" = c.ID
+    JOIN 
+        submissions s on v."Spotify URI" = s."Spotify URI"
+    GROUP BY
+        c.Name
+)
+SELECT
+    voter,
+    UNNEST(cg.all_unique_genres) AS genre_name,    
+FROM
+    combined_genres cg
+WHERE cg.voter = ?;
+"""
+
+df = con.execute(query, [competitor]).df()
+
+min_count_filter = st.slider(
+    "**Minimum Votes Per Genre (Filter Out Low Counts):**",
+    min_value=1,
+    max_value=5,
+    value=2, # Defaulting to 2 to filter out single submissions
+    step=1
+)
+
+df_genre_counts = df.groupby('genre_name').size().reset_index(name='Count')
+
+df_genre_counts = df_genre_counts[df_genre_counts['Count'] >= min_count_filter].copy()
+
+if df_genre_counts.empty:
+    st.warning(f"⚠️ **{competitor}** has no genres with a votes count of {min_count_filter} or more.")
+else:
+    radar_fig = create_radar_chart(df_genre_counts, 'voter')
+    st.plotly_chart(radar_fig, use_container_width=True)
+
+# st.subheader("Your voted genres")
+# df_vertical_table = df_counts.T
+# df_vertical_table.reset_index(inplace=True)
+# df_vertical_table.columns = ['genre_name', 'Count']
+# df_vertical_table.rename(columns={'genre_name': 'Genre'}, inplace=True)
+# df_vertical_table.sort_values(by='Count', ascending=False, inplace=True)
+#
+# st.dataframe(df_vertical_table, hide_index=True)
+
+# Other stuff
 
 query = """
 with round_songs as (
