@@ -15,7 +15,7 @@ def create_radar_chart(df_long: pd.DataFrame, id_var: str = 'submitter'):
         theta='genre_name',
         line_close=True,
         range_r=[0, max_count * 1.1],
-        title=f"Submitted genres for **{competitor}**" if id_var == 'submitter' else f"Voted genres for {competitor}",
+        title=f"Submitted genres for {competitor}" if id_var == 'submitter' else f"Voted genres for {competitor}",
         template='plotly_white'
     )
 
