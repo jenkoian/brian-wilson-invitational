@@ -10,7 +10,12 @@ st.subheader("Vote comments wordcloud")
 query = """
 WITH words AS (
     SELECT 
-        UNNEST(REGEXP_SPLIT_TO_ARRAY(Comment, ' ')) AS word
+        UNNEST(
+          REGEXP_SPLIT_TO_ARRAY(
+            regexp_replace(Comment,'[^a-zA-Z0-9\s]', ' ', 'g'), 
+            ' '
+          )
+        ) AS word
     FROM votes
     WHERE char_length(Comment) > 2
 )
@@ -36,7 +41,12 @@ st.subheader("Submission comments wordcloud")
 query = """
 WITH words AS (
     SELECT 
-        UNNEST(REGEXP_SPLIT_TO_ARRAY(Comment, ' ')) AS word
+        UNNEST(
+          REGEXP_SPLIT_TO_ARRAY(
+            regexp_replace(Comment,'[^a-zA-Z0-9\s]', ' ', 'g'), 
+            ' '
+          )
+        ) AS word
     FROM submissions
     WHERE char_length(Comment) > 2
 )
