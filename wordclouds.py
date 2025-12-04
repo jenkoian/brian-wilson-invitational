@@ -19,7 +19,7 @@ WITH words AS (
     FROM votes
     WHERE char_length(Comment) > 2
 )
-SELECT STRING_AGG(DISTINCT word, ',') AS final_string
+SELECT STRING_AGG(word, ',') AS final_string
 FROM words;  
 """
 
@@ -50,7 +50,7 @@ WITH words AS (
     FROM submissions
     WHERE char_length(Comment) > 2
 )
-SELECT STRING_AGG(DISTINCT word, ',') AS final_string
+SELECT STRING_AGG(word, ',') AS final_string
 FROM words;    
 """
 
