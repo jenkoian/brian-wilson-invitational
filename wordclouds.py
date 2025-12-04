@@ -12,6 +12,7 @@ WITH words AS (
     SELECT 
         UNNEST(REGEXP_SPLIT_TO_ARRAY(Comment, ' ')) AS word
     FROM votes
+    WHERE char_length(Comment) > 2
 )
 SELECT STRING_AGG(DISTINCT word, ',') AS final_string
 FROM words;  
@@ -37,6 +38,7 @@ WITH words AS (
     SELECT 
         UNNEST(REGEXP_SPLIT_TO_ARRAY(Comment, ' ')) AS word
     FROM submissions
+    WHERE char_length(Comment) > 2
 )
 SELECT STRING_AGG(DISTINCT word, ',') AS final_string
 FROM words;    
