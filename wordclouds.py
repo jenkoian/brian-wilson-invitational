@@ -13,7 +13,7 @@ WITH words AS (
         UNNEST(REGEXP_SPLIT_TO_ARRAY(Comment, ' ')) AS word
     FROM votes
 )
-SELECT STRING_AGG(word, ',') AS final_string
+SELECT STRING_AGG(DISTINCT word, ',') AS final_string
 FROM words;  
 """
 
@@ -38,7 +38,7 @@ WITH words AS (
         UNNEST(REGEXP_SPLIT_TO_ARRAY(Comment, ' ')) AS word
     FROM submissions
 )
-SELECT STRING_AGG(word, ',') AS final_string
+SELECT STRING_AGG(DISTINCT word, ',') AS final_string
 FROM words;    
 """
 
