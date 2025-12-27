@@ -54,6 +54,11 @@ def add_genre_spotify(table_name: str):
             genre = genres[0]
             query = f"UPDATE {table_name} SET spotify_genres = {genre} WHERE \"Spotify URI\" = '{uri[0]}'"
             con.execute(query)
+
+            track_length_seconds = song['duration_ms'] / 1000
+            print(f"Track length: {track_length_seconds}s")
+            query = f"UPDATE {table_name} SET track_length_seconds = {track_length_seconds} WHERE \"Spotify URI\" = '{uri[0]}'"
+            con.execute(query)
         except Exception as e:
             print(f"Skipping {uri[0]} due to persistent error.")
 
@@ -124,6 +129,7 @@ print('Adding genre information...')
 
 con.execute("ALTER TABLE submissions ADD COLUMN spotify_genres VARCHAR[]")
 con.execute("ALTER TABLE submissions ADD COLUMN lastfm_genres VARCHAR[]")
+con.execute("ALTER TABLE submissions ADD COLUMN track_length_seconds INTEGER")
 
 add_genre_spotify('submissions')
 add_genre_lastfm('submissions')
